@@ -1,11 +1,26 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import LanguageSwitcher from '../components/LanguageSwitcher'
-import SalaryPanel from '../components/SalaryPanel'
-import ReliefChecklist from '../components/ReliefChecklist'
-import SavingsSummary from '../components/SavingsSummary'
+import TabNav from '../components/TabNav'
+import PCBCalculatorTab from '../components/PCBCalculatorTab'
+import TaxReliefTab from '../components/TaxReliefTab'
 import taxReliefData from '../utils/taxReliefData'
 import { calculatePCB } from '../utils/pcbCalculator'
+
+const DEFAULT_INPUTS = {
+  monthlySalary: '',
+  fixedAllowance: '',
+  bonus: '',
+  taxCategory: 1,
+  isMalaysianCitizen: true,
+  isBelow60: true,
+  numberOfChildren: 0,
+  epfRate: 0.11,
+  socsoCategory: 1,
+  hasEIS: true,
+  zakatMonthly: '',
+  tp1Amount: '',
+}
 
 const initialReliefs = taxReliefData.map(r => ({
   ...r,
@@ -13,21 +28,24 @@ const initialReliefs = taxReliefData.map(r => ({
   amount: '',
   exceeded: false,
   effectiveAmount: 0,
+  inputMode: 'annual',
 }))
 
 export default function Home() {
   const { t } = useTranslation()
-  const [salary, setSalary] = useState('')
+  const [activeTab, setActiveTab] = useState(0)
+  const [pcbInputs, setPcbInputs] = useState(DEFAULT_INPUTS)
   const [reliefs, setReliefs] = useState(initialReliefs)
 
-  const pcb = calculatePCB(salary)
-  const annualIncome = (parseFloat(salary) || 0) * 12
+  const result = calculatePCB(pcbInputs)
+  const annualIncome = (parseFloat(pcbInputs.monthlySalary) || 0) * 12
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
       <div className="max-w-2xl mx-auto px-4 py-8">
+
         {/* Header */}
-        <div className="flex items-start justify-between mb-8">
+        <div className="flex items-start justify-between mb-6">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-tight">
               {t('app.title')}
@@ -39,20 +57,28 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Salary */}
-        <SalaryPanel salary={salary} onSalaryChange={setSalary} />
+        {/* Tab Navigation */}
+        <TabNav activeTab={activeTab} onTabChange={setActiveTab} />
 
-        {/* Reliefs */}
-        <ReliefChecklist reliefs={reliefs} onReliefsChange={setReliefs} />
+        {/* Tab Content */}
+        {activeTab === 0 && (
+          <PCBCalculatorTab
+            inputs={pcbInputs}
+            onInputChange={setPcbInputs}
+            result={result}
+          />
+        )}
+        {activeTab === 1 && (
+          <TaxReliefTab
+            reliefs={reliefs}
+            onReliefsChange={setReliefs}
+            chargeableIncome={result.chargeableIncome}
+            annualIncome={annualIncome}
+          />
+        )}
 
-        {/* Savings */}
-        <SavingsSummary
-          reliefs={reliefs}
-          chargeableIncome={pcb.chargeableIncome}
-          annualIncome={annualIncome}
-        />
-
-        <p className="text-center text-xs text-gray-400 pb-8">
+        {/* Footer */}
+        <p className="text-center text-xs text-gray-400 pt-8 pb-4">
           © {new Date().getFullYear()} PCB Relief Calculator · Malaysia &nbsp;|&nbsp; Powered by <span className="text-gray-500 font-medium">My Autumn Space Solutions</span> · Ros
         </p>
       </div>
