@@ -53,7 +53,7 @@ export default function Home() {
         />
 
         <p className="text-center text-xs text-gray-400 pb-8">
-          © {new Date().getFullYear()} PCB Relief Calculator · Malaysia
+          © {new Date().getFullYear()} PCB Relief Calculator · Malaysia &nbsp;|&nbsp; Powered by <span className="text-gray-500 font-medium">My Autumn Space Solutions</span> · Ros
         </p>
       </div>
     </div>
